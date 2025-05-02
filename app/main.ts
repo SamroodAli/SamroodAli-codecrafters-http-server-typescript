@@ -1,25 +1,26 @@
 import * as net from "net";
+import { requestParser } from "./http/parser";
 
 // Uncomment this to pass the first stage
 const server = net.createServer((socket) => {
   socket.on("data", (data) => {
     const request = data.toString();
 
-    const requestLines = request.split("\r\n");
-    const [_, path, __] = requestLines[0].split(" ");
+    const { path } = requestParser(request);
 
-    console.log(path);
-    switch (path) {
-      case "/": {
-        socket.write("HTTP/1.1 200 OK\r\n\r\n");
-        break;
-      }
-      default:
-        {
-          socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
-        }
-        socket.end();
+    const responses: Record<string, any> = {
+      "/": "HTTP/1.1 200 OK\r\n\r\n",
+    };
+
+    const response = responses[path];
+
+    if (response) {
+      socket.write(response);
+    } else {
+      socket.write("HTTP/1.1 404 Not Found\r\n\r\n");
     }
+
+    return socket.end();
   });
 });
 
