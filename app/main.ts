@@ -1,18 +1,21 @@
 import * as net from "net";
 import { requestParser } from "./http/parser";
+import { routes } from "./routes";
 
 // Uncomment this to pass the first stage
 const server = net.createServer((socket) => {
   socket.on("data", (data) => {
     const request = data.toString();
 
-    const { path } = requestParser(request);
+    const requestObject = requestParser(request);
 
-    const responses: Record<string, any> = {
-      "/": "HTTP/1.1 200 OK\r\n\r\n",
-    };
+    console.log(requestObject);
+    const controller = routes[requestObject.method + " " + requestObject.path];
 
-    const response = responses[path];
+    let response = "";
+    if (typeof controller === "function") {
+      response = controller(requestObject);
+    }
 
     if (response) {
       socket.write(response);
@@ -25,3 +28,4 @@ const server = net.createServer((socket) => {
 });
 
 server.listen(4221, "localhost");
+console.log("Server started listening on port http://localhost:4221");

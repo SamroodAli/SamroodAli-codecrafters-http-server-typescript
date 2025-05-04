@@ -4,7 +4,7 @@ export function requestParser(request: string): {
   method: string;
 } {
   const requestLines = request.split("\r\n");
-  const [version, path, method] = requestLines[0].split(" ");
+  const [method, path, version] = requestLines[0].split(" ");
 
   return {
     version,
